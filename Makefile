@@ -1,6 +1,6 @@
 define HELP_TEXT
 Please choose one of the following targets:
-  run-tests      - clean, build, and test all benchmarks for the specified TARGET mode (host,standalone,simple,spike[62/32],spike[64/32]-pk)
+  run-tests      - clean, build, and test all benchmarks for the specified TARGET mode (host,standalone,simple,nomos,spike[62/32],spike[64/32]-pk)
   all-clean      - clean all benchmark directories for all TARGET modes
   spike-build    - build RISC-V Spike simulator extensions for bringup-bench
 
@@ -13,6 +13,7 @@ Note that benchmark builds must be parameterized with the build MODE, such as:
   TARGET=host       - build benchmarks to run on a Linux host
   TARGET=standalone - build benchmarks to run in standalone mode (a virtual bare-metal CPU)
   TARGET=simple     - build benchmarks to run on the RISC-V Simple_System simulation testing environment
+  TARGET=nomos      - build benchmarks to run on the nomos RISC-V emulator
   TARGET=spike[64/32]    - build benchmarks to run on the RISC-V 32-bit Spike Instruction Set Simulator (ISS) with Simple_System devices
   TARGET=spike[64/32]-pk - build benchmarks to run on the RISC-V 64-bit Spike Instruction Set Simulator (ISS) with proxy kernel (pk)
 
@@ -113,6 +114,19 @@ TARGET_CLEAN = *.d ibex_simple_system_pcount.csv
 TARGET_EXCLUDES = ackermann anagram c-interp checkers donut lz-compress pi-calc rho-factor rsa-cipher spelt2num
 TARGET_CONFIGURED = 1
 TARGET_REFEXT = out
+else ifeq ($(TARGET), nomos)
+TARGET_CC = riscv64-unknown-elf-gcc
+#TARGET_CC = riscv64-unknown-elf-clang
+TARGET_AR = riscv64-unknown-elf-ar
+TARGET_CFLAGS = -DTARGET_NOMOS -DLIBMIN_MALLOC_ALIGN_BYTES=8 -march=rv32i_zicsr -mabi=ilp32 -static -mcmodel=medlow -Wall -g -Os -fvisibility=hidden -nostdlib -nostartfiles -ffreestanding # -MMD -mcmodel=medany
+TARGET_LIBS = -lgcc
+TARGET_SIM = cargo run --quiet --manifest-path ../../../Cargo.toml -- --elf-path
+TARGET_DIFF = diff
+TARGET_EXE = $(PROG).nomos.elf
+TARGET_CLEAN = *.d
+TARGET_EXCLUDES = ackermann anagram c-interp checkers donut lz-compress pi-calc rho-factor rsa-cipher spelt2num
+TARGET_CONFIGURED = 1
+TARGET_REFEXT = out
 else ifeq ($(TARGET), spike32)
 TARGET_CC = riscv64-unknown-elf-gcc
 #TARGET_CC = riscv64-unknown-elf-clang
@@ -210,6 +224,8 @@ else ifeq ($(TARGET), hashalone-spike64)
 	$(TARGET_CC) $(CFLAGS) -T ../target/spike-map.ld $^ ../target/spike-crt0.S -o $@ $(LIBS) $(TARGET_LIBS)
 else ifeq ($(TARGET), simple)
 	$(TARGET_CC) $(CFLAGS) -T ../target/simple-map.ld $^ ../target/simple-crt0.S -o $@ $(LIBS) $(TARGET_LIBS)
+else ifeq ($(TARGET), nomos)
+	$(TARGET_CC) $(CFLAGS) -T ../target/nomos-map.ld $^ ../target/nomos-crt0.S -o $@ $(LIBS) $(TARGET_LIBS)
 else ifeq ($(TARGET), spike32)
 	$(TARGET_CC) $(CFLAGS) -T ../target/spike-map.ld $^ ../target/spike-crt0.S -o $@ $(LIBS) $(TARGET_LIBS)
 else ifeq ($(TARGET), spike64)
@@ -223,7 +239,7 @@ else
 endif
 
 clean:
-	rm -f $(PROG).host $(PROG).sa $(PROG).elf $(PROG).hahost $(PROG).haspike *.o ../common/*.o ../target/*.o ../common/libmin.a *.d ../common/*.d core mem.out *.log FOO $(LOCAL_CLEAN) $(TARGET_CLEAN)
+	rm -f $(PROG).host $(PROG).sa $(PROG).elf $(PROG).nomos.elf $(PROG).hahost $(PROG).haspike *.o ../common/*.o ../target/*.o ../common/libmin.a *.d ../common/*.d core mem.out *.log FOO $(LOCAL_CLEAN) $(TARGET_CLEAN)
 
 
 #
@@ -248,7 +264,7 @@ endif
 
 clean-all all-clean:
 	@for _BMARK in $(BMARKS) ; do \
-	  for _TARGET in host standalone hashalone-host simple spike hashalone-host hashalone-spike ; do \
+	  for _TARGET in host standalone hashalone-host simple nomos spike hashalone-host hashalone-spike ; do \
 	    cd $$_BMARK ; \
 	    echo "--------------------------------" ; \
 	    echo "Cleaning "$$_BMARK" in TARGET="$$_TARGET ; \
@@ -260,4 +276,3 @@ clean-all all-clean:
 
 spike-build:
 	$(MAKE) -C target clean build
-

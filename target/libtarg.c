@@ -15,6 +15,41 @@
 #include <stdio.h>
 #include <stdlib.h>
 #define MAX_SPIN  10000     /* make this larger for a real hardware platform */
+#elif defined(TARGET_NOMOS)
+#include <stdlib.h>
+
+#define NOMOS_CTRL_BASE 0x20000
+#define NOMOS_CTRL_OUT  0x00
+#define NOMOS_CTRL_EXIT 0x08
+
+#define NOMOS_DEV_WRITE(addr, val) (*((volatile uint32_t *)(addr)) = val)
+
+extern inline int
+nomos_putchar(char c)
+{
+  NOMOS_DEV_WRITE(NOMOS_CTRL_BASE + NOMOS_CTRL_OUT, (unsigned char)c);
+  return c;
+}
+
+__attribute__((noreturn)) extern inline void
+nomos_exit(int code)
+{
+  NOMOS_DEV_WRITE(NOMOS_CTRL_BASE + NOMOS_CTRL_EXIT, code);
+  while (1);
+}
+
+void *
+memset(void *dest, int val, size_t len)
+{
+  return libmin_memset(dest, val, len);
+}
+
+void *
+memcpy(void *dest, const void *src, size_t len)
+{
+  return libmin_memcpy(dest, src, len);
+}
+
 #elif defined(TARGET_SIMPLE) || defined(TARGET_SPIKE) || defined(TARGET_HASPIKE)
 #include <stdlib.h>
 
@@ -153,6 +188,8 @@ SPIN_SUCCESS_ADDR:
 #elif defined(TARGET_SIMPLE) || defined(TARGET_SPIKE)
   // libmin_printf("EXIT: success\n");
   simple_halt();
+#elif defined(TARGET_NOMOS)
+  nomos_exit(0);
 #else
 #error Co-simulation platform not defined, define TARGET_HOST or a target-dependent definition.
 #endif
@@ -179,6 +216,8 @@ SPIN_FAIL_ADDR:
 #elif defined(TARGET_SIMPLE) || defined(TARGET_SPIKE) || defined(TARGET_HASPIKE)
   // libmin_printf("EXIT: fail code = %d\n", code);
   simple_halt();
+#elif defined(TARGET_NOMOS)
+  nomos_exit(code);
 #else
 #error Co-simulation platform not defined, define TARGET_HOST or a target-dependent definition.
 #endif
@@ -203,6 +242,8 @@ libtarg_putc(char c)
   __hashval = libmin_fnv64a(&c, 1, __hashval);
 #elif defined(TARGET_SIMPLE) || defined(TARGET_SPIKE)
   simple_putchar(c);
+#elif defined(TARGET_NOMOS)
+  nomos_putchar(c);
 #else
 #error Co-simulation platform not defined, define TARGET_HOST or a target-dependent definition.
 #endif
@@ -220,11 +261,11 @@ static uint8_t __heap[MAX_HEAP];
 static uint32_t __heap_ptr = 0;
 #endif /* TARGET_HAHOST */
 
-#if defined(TARGET_SIMPLE) || defined(TARGET_SPIKE) || defined(TARGET_HASPIKE)
+#if defined(TARGET_SIMPLE) || defined(TARGET_SPIKE) || defined(TARGET_HASPIKE) || defined(TARGET_NOMOS)
 #define MAX_HEAP    (32*1024)
 static uint8_t __heap[MAX_HEAP];
 static uint32_t __heap_ptr = 0;
-#endif /* TARGET_SIMPLE || TARGET_SPIKE */
+#endif /* TARGET_SIMPLE || TARGET_SPIKE || TARGET_NOMOS */
 
 /* get some memory */
 void *
@@ -235,7 +276,7 @@ libtarg_sbrk(size_t inc)
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
 #endif /* __clang__ */
   return sbrk(inc);
-#elif defined(TARGET_SA) || defined(TARGET_HAHOST) || defined(TARGET_SIMPLE) || defined(TARGET_SPIKE) || defined(TARGET_HASPIKE)
+#elif defined(TARGET_SA) || defined(TARGET_HAHOST) || defined(TARGET_SIMPLE) || defined(TARGET_SPIKE) || defined(TARGET_HASPIKE) || defined(TARGET_NOMOS)
   uint8_t *ptr = &__heap[__heap_ptr];
   if (inc == 0)
     return ptr;
@@ -289,4 +330,3 @@ libtarg_stop_perf(void)
 #endif
 }
 #endif /* TARGET_PERFHOOKS */
-
