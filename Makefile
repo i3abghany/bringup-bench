@@ -118,7 +118,7 @@ else ifeq ($(TARGET), nomos)
 TARGET_CC = riscv64-unknown-elf-gcc
 #TARGET_CC = riscv64-unknown-elf-clang
 TARGET_AR = riscv64-unknown-elf-ar
-TARGET_CFLAGS = -DTARGET_NOMOS -DLIBMIN_MALLOC_ALIGN_BYTES=8 -march=rv32i_zicsr -mabi=ilp32 -static -mcmodel=medlow -Wall -g -Os -fvisibility=hidden -nostdlib -nostartfiles -ffreestanding # -MMD -mcmodel=medany
+TARGET_CFLAGS = -DTARGET_NOMOS -DLIBMIN_MALLOC_ALIGN_BYTES=8 -march=rv32imafdc -mabi=ilp32d -static -mcmodel=medlow -Wall -g -Os -fvisibility=hidden -nostdlib -nostartfiles -ffreestanding # -MMD -mcmodel=medany
 TARGET_LIBS = -lgcc
 TARGET_SIM = cargo run --quiet --manifest-path ../../../Cargo.toml -- --elf-path
 TARGET_DIFF = diff
