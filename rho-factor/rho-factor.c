@@ -88,16 +88,17 @@ int main(void)
               ((char *) &n)[k] = (libmin_rand() & 0xff);
             }
             n &= mask >> ((positive_number)8 * sizeof(positive_number) - n_bits); n += !(n & (positive_number)1);
-            libmin_printf("%5d. (%2ld bits) %22lu = ", ++count, n_bits, n);
+            libmin_printf("%5d. (%2lld bits) %22llu = ", ++count,
+                          (long long)n_bits, (unsigned long long)n);
             // fill the "factors" array with the prime factors.
             factor(n, factors);
             // iterate over the factors (zero terminated array).
             for (j = 0; factors[j + 1]; ++j) {
-                libmin_printf("%lu * ", factors[j]);
+                libmin_printf("%llu * ", (unsigned long long)factors[j]);
                 libmin_assert(n % factors[j] == 0);
                 libmin_assert(is_prime(factors[j], 36));
             }
-            libmin_printf("%lu\n", factors[j]);
+            libmin_printf("%llu\n", (unsigned long long)factors[j]);
         }
     }
 
@@ -107,4 +108,3 @@ int main(void)
     // proper exit
     libmin_success();
 }
-
