@@ -2,8 +2,8 @@ OUTPUT_ARCH(riscv)
 
 MEMORY
 {
-    ram   : ORIGIN = 0x00100000, LENGTH = 0x30000
-    stack : ORIGIN = 0x00130000, LENGTH = 0x10000
+    ram   : ORIGIN = 0x00100000, LENGTH = 0x00e00000
+    stack : ORIGIN = 0x00f00000, LENGTH = 0x00010000
 }
 
 _min_stack    = 0x2000;

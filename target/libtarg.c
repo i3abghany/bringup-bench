@@ -261,11 +261,15 @@ static uint8_t __heap[MAX_HEAP];
 static uint32_t __heap_ptr = 0;
 #endif /* TARGET_HAHOST */
 
-#if defined(TARGET_SIMPLE) || defined(TARGET_SPIKE) || defined(TARGET_HASPIKE) || defined(TARGET_NOMOS)
+#if defined(TARGET_NOMOS)
+#define MAX_HEAP    (1536*1024)
+static uint8_t __heap[MAX_HEAP];
+static uint32_t __heap_ptr = 0;
+#elif defined(TARGET_SIMPLE) || defined(TARGET_SPIKE) || defined(TARGET_HASPIKE)
 #define MAX_HEAP    (32*1024)
 static uint8_t __heap[MAX_HEAP];
 static uint32_t __heap_ptr = 0;
-#endif /* TARGET_SIMPLE || TARGET_SPIKE || TARGET_NOMOS */
+#endif /* TARGET_SIMPLE || TARGET_SPIKE || TARGET_HASPIKE || TARGET_NOMOS */
 
 /* get some memory */
 void *
