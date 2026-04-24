@@ -83,7 +83,7 @@ fmtstr(char *buffer, size_t *currlen, size_t maxlen,
 
 static void
 fmtint(char *buffer, size_t *currlen, size_t maxlen,
-       long value, int base, int min, int max, int flags);
+  LLONG value, int base, int min, int max, int flags);
 
 static void
 fmtfp(char *buffer, size_t *currlen, size_t maxlen,
@@ -258,25 +258,25 @@ dopr(char *buffer, size_t maxlen, const char *format, va_list args)
       case 'o':
 	flags |= DP_F_UNSIGNED;
 	if (cflags == DP_C_SHORT)
-	  value = va_arg (args, unsigned int);
+    value = (LLONG)(unsigned LLONG)va_arg (args, unsigned int);
 	else if (cflags == DP_C_LONG)
-	  value = (long)va_arg (args, unsigned long int);
+    value = (LLONG)(unsigned LLONG)va_arg (args, unsigned long int);
 	else if (cflags == DP_C_LLONG)
-	  value = (long)va_arg (args, unsigned LLONG);
+    value = (LLONG)va_arg (args, unsigned LLONG);
 	else
-	  value = (long)va_arg (args, unsigned int);
+    value = (LLONG)(unsigned LLONG)va_arg (args, unsigned int);
 	fmtint (buffer, &currlen, maxlen, value, 8, min, max, flags);
 	break;
       case 'u':
 	flags |= DP_F_UNSIGNED;
 	if (cflags == DP_C_SHORT)
-	  value = va_arg (args, unsigned int);
+    value = (LLONG)(unsigned LLONG)va_arg (args, unsigned int);
 	else if (cflags == DP_C_LONG)
-	  value = (long)va_arg (args, unsigned long int);
+    value = (LLONG)(unsigned LLONG)va_arg (args, unsigned long int);
 	else if (cflags == DP_C_LLONG)
-	  value = (LLONG)va_arg (args, unsigned LLONG);
+    value = (LLONG)va_arg (args, unsigned LLONG);
 	else
-	  value = (long)va_arg (args, unsigned int);
+    value = (LLONG)(unsigned LLONG)va_arg (args, unsigned int);
 	fmtint (buffer, &currlen, maxlen, value, 10, min, max, flags);
 	break;
       case 'X':
@@ -284,13 +284,13 @@ dopr(char *buffer, size_t maxlen, const char *format, va_list args)
       case 'x':
 	flags |= DP_F_UNSIGNED;
 	if (cflags == DP_C_SHORT)
-	  value = va_arg (args, unsigned int);
+    value = (LLONG)(unsigned LLONG)va_arg (args, unsigned int);
 	else if (cflags == DP_C_LONG)
-	  value = (long)va_arg (args, unsigned long int);
+    value = (LLONG)(unsigned LLONG)va_arg (args, unsigned long int);
 	else if (cflags == DP_C_LLONG)
-	  value = (LLONG)va_arg (args, unsigned LLONG);
+    value = (LLONG)va_arg (args, unsigned LLONG);
 	else
-	  value = (long)va_arg (args, unsigned int);
+    value = (LLONG)(unsigned LLONG)va_arg (args, unsigned int);
 	fmtint (buffer, &currlen, maxlen, value, 16, min, max, flags);
 	break;
       case 'f':
@@ -424,10 +424,10 @@ fmtstr(char *buffer, size_t *currlen, size_t maxlen,
 
 static void
 fmtint(char *buffer, size_t *currlen, size_t maxlen,
-       long value, int base, int min, int max, int flags)
+  LLONG value, int base, int min, int max, int flags)
 {
   int signvalue = 0;
-  unsigned long uvalue;
+  unsigned LLONG uvalue;
   char convert[20];
   int place = 0;
   int spadlen = 0; /* amount to space pad */
